@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "../../supabaseClient";
 import { useToast } from "../Toast/ToastContext";
 import styles from "./BouteilleForm.module.css";
+import { QrReader } from 'react-qr-reader';
 
 export default function BouteilleForm({ onAdd, onClose }) {
   const [nom, setNom] = useState("");
@@ -10,7 +11,9 @@ export default function BouteilleForm({ onAdd, onClose }) {
   const [note, setNote] = useState("");
   const [types, setTypes] = useState([]);
   const [type, setType] = useState("");
+  const [upc, setUpc] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const comboboxRef = useRef(null);
   const { showToast } = useToast();
 
@@ -51,6 +54,39 @@ export default function BouteilleForm({ onAdd, onClose }) {
     }
   };
 
+  const handleScan = async (result, error) => {
+    if (!!result) {
+      setUpc(result?.text);
+      setShowScanner(false);
+      const { data, error: dbError } = await supabase
+        .from("spirits_data")
+        .select("POS_Name, I_Size, ABV, Name")
+        .eq("UPC_A", result.text)
+        .single();
+
+      if (!dbError && data) {
+        setNom(data.POS_Name || "");
+        setQuantite(Number(data.I_Size) || 1);
+        setAnnee(data.ABV ? String(data.ABV) : "");
+        setType(data.Name || "");
+        showToast("Informations de la bouteille pré-remplies !", "success");
+      } else {
+        showToast("Aucune information trouvée pour ce code-barres.", "info");
+        console.error("Error fetching spirit data:", dbError);
+      }
+    }
+
+    if (!!error) {
+      console.info(error);
+    }
+  };
+
+  const handleError = (err) => {
+    console.error(err);
+    showToast("Erreur lors du scan du code-barres.", "error");
+    setShowScanner(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const finalType = type.trim();
@@ -59,7 +95,7 @@ export default function BouteilleForm({ onAdd, onClose }) {
     }
 
     const { error } = await supabase.from("bouteilles").insert([
-      { nom: nom.trim(), quantite: Number(quantite)||1, annee: annee ? Number(annee) : null, note: note.trim() || null, type: finalType || null }
+      { nom: nom.trim(), quantite: Number(quantite)||1, annee: annee ? Number(annee) : null, note: note.trim() || null, type: finalType || null, upc: upc || null }
     ]);
 
     if (!error) {
@@ -106,6 +142,21 @@ export default function BouteilleForm({ onAdd, onClose }) {
           <button type="button" onClick={onClose} className={styles.btnCancel}>Annuler</button>
           <button type="submit" className={styles.btnSubmit}>Ajouter</button>
         </div>
+        <button type="button" onClick={() => setShowScanner(prev => !prev)} className={styles.btnScanBarcode}>
+          {showScanner ? "Fermer le scanner" : "Scanner un code-barres"}
+        </button>
+        {showScanner && (
+          <div className={styles.scannerContainer}>
+            <QrReader
+              onResult={handleScan}
+              onError={handleError}
+              constraints={{ facingMode: 'environment' }}
+              videoStyle={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              className={styles.qrReader}
+              debug={true}
+            />
+          </div>
+        )}
       </form>
     </div>
   );
