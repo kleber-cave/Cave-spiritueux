@@ -84,7 +84,7 @@ export default function BouteilleForm({ onAdd, onClose }) {
     showToast("Aucun code-barres détecté ou illisible.", "warning");
     setShowScanner(false);
     codeReader.reset();
-  }, 5000); // ex 2000 ms = 2 secondes
+  }, 10000); // ex 2000 ms = 2 secondes
 
   codeReader.decodeFromVideoDevice(null, videoRef.current, async (result, err) => {
     if (result) {
