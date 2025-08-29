@@ -1,0 +1,67 @@
+.container {
+  padding: 16px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.addBtn {
+  background-color: #3b82f6;
+  color: white;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.addBtn:hover {
+  background-color: #2563eb;
+}
+
+/* Grid des bouteilles */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+/* Message vide */
+.empty {
+  text-align: center;
+  color: #555;
+  font-style: italic;
+  width: 100%;
+}
+
+/* Modal backdrop pour le formulaire */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+/* Modal content */
+.modalContent {
+  width: 100%;
+  max-width: 420px;
+}
