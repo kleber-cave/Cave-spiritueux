@@ -100,7 +100,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block; /* Ensure the video element is treated as a block element */
+  display: block;
 }
 
 .btnScanBarcode {
@@ -118,14 +118,24 @@
 .scannerContainer {
   margin-top: 16px;
   width: 100%;
-  max-width: 400px; /* Increased max-width for better visibility */
-  height: 300px; /* Set a fixed height for the scanner container */
+  max-width: 400px;
+  height: 300px;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #f3f4f6;
   border-radius: 12px;
   overflow: hidden;
+  border: 4px solid gray; /* par défaut gris */
+  transition: border-color 0.3s ease;
+}
+
+.scannerContainer.success {
+  border-color: #10b981; /* vert succès */
+}
+
+.scannerContainer.error {
+  border-color: #ef4444; /* rouge erreur */
 }
 
 .btnCancel {

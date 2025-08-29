@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "../../supabaseClient";
 import { useToast } from "../Toast/ToastContext";
 import styles from "./BouteilleForm.module.css";
-import { BrowserMultiFormatReader } from "@zxing/library";
+import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 
 export default function BouteilleForm({ onAdd, onClose }) {
   const [nom, setNom] = useState("");
@@ -14,6 +14,7 @@ export default function BouteilleForm({ onAdd, onClose }) {
   const [upc, setUpc] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [scannerStatus, setScannerStatus] = useState("idle"); // idle, success, error
 
   const comboboxRef = useRef(null);
   const videoRef = useRef(null);
@@ -68,43 +69,60 @@ export default function BouteilleForm({ onAdd, onClose }) {
     }
   };
 
-  // --- SCANNER : initialisation au moment où <video> est monté ---
+  // --- SCANNER ---
   useEffect(() => {
-    if (!showScanner || !videoRef.current) return;
+  if (!showScanner || !videoRef.current) return;
 
-    const codeReader = new BrowserMultiFormatReader();
-    codeReaderRef.current = codeReader;
+  const codeReader = new BrowserMultiFormatReader();
+  codeReaderRef.current = codeReader;
 
-    codeReader
-      .decodeFromVideoDevice(null, videoRef.current, async (result, err) => {
-        if (result) {
-          const text = result.getText();
-          setUpc(text);
-          setShowScanner(false);
+  setScannerStatus("idle");
 
-          const { data, error: dbError } = await supabase
-            .from("spirits_data")
-            .select("POS_Name, I_Size, ABV, Name")
-            .eq("UPC_A", text)
-            .single();
+  // Timeout pour fermer le scanner si rien n'est détecté
+  const timeoutId = setTimeout(() => {
+    setScannerStatus("error");
+    showToast("Aucun code-barres détecté ou illisible.", "warning");
+    setShowScanner(false);
+    codeReader.reset();
+  }, 5000); // ex 2000 ms = 2 secondes
 
-          if (!dbError && data) {
-            setNom(data.POS_Name || "");
-            setQuantite(Number(data.I_Size) || 1);
-            setAnnee(data.ABV ? String(data.ABV) : "");
-            setType(data.Name || "");
-            showToast("Informations de la bouteille pré-remplies !", "success");
-          } else {
-            showToast("Aucune information trouvée pour ce code-barres.", "info");
-            console.error("Error fetching spirit data:", dbError);
-          }
-        }
-      });
+  codeReader.decodeFromVideoDevice(null, videoRef.current, async (result, err) => {
+    if (result) {
+      clearTimeout(timeoutId); // lecture réussie => annuler le timeout
+      setScannerStatus("success");
 
-    return () => {
-      codeReader.reset();
-    };
-  }, [showScanner]);
+      const text = result.getText();
+      setUpc(text);
+
+      const { data, error: dbError } = await supabase
+        .from("spirits_data")
+        .select("POS_Name, I_Size, ABV, Name")
+        .eq("UPC_A", text)
+        .single();
+
+      if (!dbError && data) {
+        setNom(data.POS_Name || "");
+        setQuantite(Number(data.I_Size) || 1);
+        setAnnee(data.ABV ? String(data.ABV) : "");
+        setType(data.Name || "");
+        showToast("Informations de la bouteille pré-remplies !", "success");
+      } else {
+        setScannerStatus("error");
+        showToast("Aucune information trouvée pour ce code-barres.", "info");
+      }
+
+      setShowScanner(false);
+    } else if (err && !(err instanceof NotFoundException)) {
+      console.error("Scanner error:", err);
+    }
+  });
+
+  return () => {
+    codeReader.reset();
+    clearTimeout(timeoutId);
+  };
+}, [showScanner]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -227,13 +245,17 @@ export default function BouteilleForm({ onAdd, onClose }) {
         </button>
 
         {showScanner && (
-          <div className={styles.scannerContainer}>
+          <div
+            className={`${styles.scannerContainer} ${
+              scannerStatus === "success" ? "success" :
+              scannerStatus === "error" ? "error" : ""
+            }`}
+          >
             <video
               ref={videoRef}
               autoPlay
               playsInline
               muted
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           </div>
         )}
