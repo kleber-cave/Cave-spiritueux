@@ -1,10 +1,10 @@
-// src/pages/Home.jsx
+// src/pages/List/List.jsx
 import React, { useEffect, useState } from "react";
-import { supabase } from "../supabaseClient";
-import BouteilleCard from "../components/BouteilleCard/BouteilleCard";
-import styles from "./Home.module.css";
+import { supabase } from "../../supabaseClient";
+import BouteilleCard from "../../components/BouteilleCard/BouteilleCard";
+import styles from "./List.module.css";
 
-export default function Home({ refresh }) {
+export default function List({ refresh }) {
   const [bouteilles, setBouteilles] = useState([]);
 
   const fetchBouteilles = async () => {

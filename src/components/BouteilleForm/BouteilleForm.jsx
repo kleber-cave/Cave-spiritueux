@@ -6,8 +6,8 @@ import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 
 export default function BouteilleForm({ onAdd, onClose }) {
   const [nom, setNom] = useState("");
-  const [quantite, setQuantite] = useState(1);
-  const [annee, setAnnee] = useState("");
+  const [quantitecl, setQuantitecl] = useState(70);
+  const [abv, setAbv] = useState("");
   const [note, setNote] = useState("");
   const [types, setTypes] = useState([]);
   const [type, setType] = useState("");
@@ -102,8 +102,8 @@ export default function BouteilleForm({ onAdd, onClose }) {
 
       if (!dbError && data) {
         setNom(data.POS_Name || "");
-        setQuantite(Number(data.I_Size) || 1);
-        setAnnee(data.ABV ? String(data.ABV) : "");
+        setQuantitecl(Number(data.I_Size) || 70);
+        setAbv(data.ABV ? String(data.ABV) : "");
         setType(data.Name || "");
         showToast("Informations de la bouteille pré-remplies !", "success");
       } else {
@@ -133,11 +133,11 @@ export default function BouteilleForm({ onAdd, onClose }) {
 
     const { error } = await supabase.from("bouteilles").insert([
       {
-        nom: nom.trim(),
-        quantite: Number(quantite) || 1,
-        annee: annee ? Number(annee) : null,
+        Nom: nom.trim(),
+        "Quantite (cL)": Number(quantitecl) || 70,
+        "ABV (%)": abv ? Number(abv) : null,
         note: note.trim() || null,
-        type: finalType || null,
+        Type: finalType || null,
         upc: upc || null,
       },
     ]);
@@ -200,22 +200,22 @@ export default function BouteilleForm({ onAdd, onClose }) {
           )}
         </div>
 
-        <label>Quantité</label>
+        <label>Quantité (cL)</label>
         <input
           className={styles.inputField}
           type="number"
           min="1"
-          value={quantite}
-          onChange={(e) => setQuantite(e.target.value)}
+          value={quantitecl}
+          onChange={(e) => setQuantitecl(e.target.value)}
         />
 
-        <label>Année</label>
+        <label>ABV (%)</label>
         <input
           className={styles.inputField}
           type="number"
-          placeholder="ex: 1998"
-          value={annee}
-          onChange={(e) => setAnnee(e.target.value)}
+          placeholder="ex: 40"
+          value={abv}
+          onChange={(e) => setAbv(e.target.value)}
         />
 
         <label>Note</label>

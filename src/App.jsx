@@ -2,8 +2,8 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastProvider } from "./components/Toast/ToastContext";
-import Home from "./pages/Home";
-import About from "./pages/About";
+import KPI from "./pages/KPI/KPI";
+import List from "./pages/List/List";
 import BottomNav from "./components/BottomNav/BottomNav";
 import BouteilleForm from "./components/BouteilleForm/BouteilleForm";
 
@@ -21,8 +21,8 @@ function App() {
       <Router>
         <div style={{ paddingBottom: '80px' }}>
           <Routes>
-            <Route path="/" element={<Home refresh={refreshList} />} />
-            <Route path="/about" element={<About />} />
+<Route path="/" element={<KPI />} />
+<Route path="/list" element={<List refresh={refreshList} />} />
           </Routes>
         </div>
         <BottomNav onAddClick={() => setShowForm(true)} />

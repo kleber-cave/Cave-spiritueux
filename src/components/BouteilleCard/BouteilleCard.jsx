@@ -5,11 +5,13 @@ import styles from "./BouteilleCard.module.css";
 export default function BouteilleCard({ bouteille }) {
   return (
     <div className={styles.card}>
-      <h3 className={styles.name}>{bouteille.nom}</h3>
-      {bouteille.type && <p className={styles.type}>{bouteille.type}</p>}
+      <h3 className={styles.name}>{bouteille.Nom}</h3>
+      {bouteille.Type && <p className={styles.type}>{bouteille.Type}</p>}
       <p>
-        {bouteille.annee ? `Année: ${bouteille.annee}` : ""}
-        {bouteille.quantite ? ` • Qté: ${bouteille.quantite}` : ""}
+        {bouteille["ABV (%)"] ? `ABV: ${bouteille["ABV (%)"]}%` : ""}
+        {bouteille["Quantite (cL)"]
+          ? ` • ${bouteille["Quantite (cL)"]} cL`
+          : ""}
       </p>
       {bouteille.note && <p className={styles.note}>{bouteille.note}</p>}
     </div>
