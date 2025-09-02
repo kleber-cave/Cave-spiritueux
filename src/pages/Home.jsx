@@ -2,12 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import BouteilleCard from "../components/BouteilleCard/BouteilleCard";
-import BouteilleForm from "../components/BouteilleForm/BouteilleForm";
 import styles from "./Home.module.css";
 
-export default function Home() {
+export default function Home({ refresh }) {
   const [bouteilles, setBouteilles] = useState([]);
-  const [showForm, setShowForm] = useState(false);
 
   const fetchBouteilles = async () => {
     const { data, error } = await supabase
@@ -19,19 +17,12 @@ export default function Home() {
 
   useEffect(() => {
     fetchBouteilles();
-  }, []);
-
-  const handleAdd = () => {
-    fetchBouteilles();
-  };
+  }, [refresh]);
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <h1>Ma Cave à Spiritueux</h1>
-        <button className={styles.addBtn} onClick={() => setShowForm(true)}>
-          + Ajouter une bouteille
-        </button>
       </header>
 
       <main className={styles.grid}>
@@ -43,17 +34,6 @@ export default function Home() {
           ))
         )}
       </main>
-
-      {showForm && (
-        <div className="modalBackdrop">
-          <div className="modalContent">
-            <BouteilleForm
-              onAdd={() => { handleAdd(); setShowForm(false); }}
-              onClose={() => setShowForm(false)}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
